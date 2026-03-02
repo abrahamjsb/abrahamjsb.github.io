@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Abraham Sanchez - Welcome" lang="en">
+  <section class="mt-8 md:mt-16 flex flex-col items-center text-center space-y-6">
+    <div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center overflow-hidden mb-4 shadow-xl shadow-[var(--color-primary)]/20">
+      <img src="/logo.png" alt="Abraham Sanchez Avatar" class="w-full h-full object-cover" />
+    </div>
+    
+    <h1 class="text-4xl md:text-5xl font-bold tracking-tight">Abraham Sanchez</h1>
+    <h2 class="text-xl md:text-2xl text-[var(--color-primary)] font-medium max-w-2xl">
+      Software Engineer & Digital Creator
+    </h2>
+    <p class="text-lg text-[var(--muted-color)] max-w-2xl leading-relaxed mt-4">
+      Welcome to my personal corner of the web. Here, I write about technology, 
+      share stoic principles for a fulfilling life, and document my journey.
+    </p>
+
+    <div class="mt-10 flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center">
+      <a href="mailto:contact@example.com" class="px-8 py-3 rounded-md bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white font-medium transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+        Get In Touch
+      </a>
+      <a href="/en/blog/" class="px-8 py-3 rounded-md border-2 border-[var(--text-color)] text-[var(--text-color)] hover:bg-[var(--text-color)] hover:text-[var(--bg-color)] font-medium transition-all">
+        Read My Blog
+      </a>
+    </div>
+  </section>
+
+  <section class="mt-24 border-t border-gray-100 dark:border-gray-800 pt-16">
+    <div class="grid md:grid-cols-2 gap-12">
+      <div class="space-y-6">
+        <h3 class="text-2xl font-semibold flex items-center gap-2">
+          <span>📝</span> Recent Writings
+        </h3>
+        <p class="text-[var(--muted-color)]">
+          Explore my latest articles on software development and stoicism.
+        </p>
+        <a href="/en/blog/" class="inline-block text-[var(--color-primary)] hover:underline font-medium">View all posts &rarr;</a>
+      </div>
+      
+      <div class="space-y-6">
+        <h3 class="text-2xl font-semibold flex items-center gap-2">
+          <span>🎥</span> Latest Videos
+        </h3>
+        <p class="text-[var(--muted-color)]">
+          Watch my latest content discussing tech, insights, and personal growth.
+        </p>
+        <a href="/en/videos/" class="inline-block text-[var(--color-primary)] hover:underline font-medium">Watch videos &rarr;</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Abraham Sanchez - Blog" lang="es">
+  <div class="max-w-3xl mx-auto space-y-12">
+    <header class="space-y-4">
+      <h1 class="text-4xl font-bold tracking-tight">Blog</h1>
+      <p class="text-[var(--muted-color)] text-lg">
+        Reflexiones sobre ingeniería de software, tecnología y filosofía estoica. 
+        ¡Más contenido muy pronto!
+      </p>
+    </header>
+
+    <div class="space-y-8">
+      <!-- Placeholder Post -->
+      <article class="p-6 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-[var(--color-primary)] dark:hover:border-[var(--color-primary)] transition-colors">
+        <div class="flex items-center gap-4 text-sm text-[var(--muted-color)] mb-3">
+          <time datetime="2026-03-01">01 de Marzo, 2026</time>
+          <span>•</span>
+          <span>Estoicismo</span>
+        </div>
+        <h2 class="text-2xl font-semibold mb-3">
+          <a href="#" class="hover:text-[var(--color-primary)] transition-colors">Encontrando Claridad en el Código a través del Estoicismo</a>
+        </h2>
+        <p class="text-[var(--muted-color)] mb-4 leading-relaxed">
+          Cómo la antigua filosofía del estoicismo puede ayudar a los ingenieros de software 
+          a lidiar con sistemas complejos, plazos ajustados y caídas inesperadas.
+        </p>
+        <a href="#" class="text-[var(--color-primary)] font-medium hover:underline">Leer artículo &rarr;</a>
+      </article>
+      
+      <!-- Placeholder Post 2 -->
+      <article class="p-6 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-[var(--color-primary)] dark:hover:border-[var(--color-primary)] transition-colors">
+        <div class="flex items-center gap-4 text-sm text-[var(--muted-color)] mb-3">
+          <time datetime="2026-02-15">15 de Febrero, 2026</time>
+          <span>•</span>
+          <span>Tecnología</span>
+        </div>
+        <h2 class="text-2xl font-semibold mb-3">
+          <a href="#" class="hover:text-[var(--color-primary)] transition-colors">Adoptando el Minimalismo en el Diseño Web</a>
+        </h2>
+        <p class="text-[var(--muted-color)] mb-4 leading-relaxed">
+          Por qué más simple a menudo es mejor. Una mirada a cómo reducir el ruido 
+          en la interfaz resulta en mejores experiencias y código más mantenible.
+        </p>
+        <a href="#" class="text-[var(--color-primary)] font-medium hover:underline">Leer artículo &rarr;</a>
+      </article>
+    </div>
+  </div>
+</BaseLayout>

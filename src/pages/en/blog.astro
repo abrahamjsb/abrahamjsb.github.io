@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Abraham Sanchez - Blog" lang="en">
+  <div class="max-w-3xl mx-auto space-y-12">
+    <header class="space-y-4">
+      <h1 class="text-4xl font-bold tracking-tight">Blog</h1>
+      <p class="text-[var(--muted-color)] text-lg">
+        Thoughts on software engineering, technology, and stoic philosophy. 
+        More content coming soon!
+      </p>
+    </header>
+
+    <div class="space-y-8">
+      <!-- Placeholder Post -->
+      <article class="p-6 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-[var(--color-primary)] dark:hover:border-[var(--color-primary)] transition-colors">
+        <div class="flex items-center gap-4 text-sm text-[var(--muted-color)] mb-3">
+          <time datetime="2026-03-01">March 01, 2026</time>
+          <span>•</span>
+          <span>Stoicism</span>
+        </div>
+        <h2 class="text-2xl font-semibold mb-3">
+          <a href="#" class="hover:text-[var(--color-primary)] transition-colors">Finding Code Clarity through Stoicism</a>
+        </h2>
+        <p class="text-[var(--muted-color)] mb-4 leading-relaxed">
+          How the ancient philosophy of Stoicism can help software engineers deal with 
+          complex legacy codebases, tight deadlines, and unexpected outages.
+        </p>
+        <a href="#" class="text-[var(--color-primary)] font-medium hover:underline">Read article &rarr;</a>
+      </article>
+      
+      <!-- Placeholder Post 2 -->
+      <article class="p-6 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-[var(--color-primary)] dark:hover:border-[var(--color-primary)] transition-colors">
+        <div class="flex items-center gap-4 text-sm text-[var(--muted-color)] mb-3">
+          <time datetime="2026-02-15">February 15, 2026</time>
+          <span>•</span>
+          <span>Tech</span>
+        </div>
+        <h2 class="text-2xl font-semibold mb-3">
+          <a href="#" class="hover:text-[var(--color-primary)] transition-colors">Embracing Minimalism in Web Design</a>
+        </h2>
+        <p class="text-[var(--muted-color)] mb-4 leading-relaxed">
+          Why simpler is often better. A look at how reducing noise in your UI 
+          leads to better user experiences and more maintainable code.
+        </p>
+        <a href="#" class="text-[var(--color-primary)] font-medium hover:underline">Read article &rarr;</a>
+      </article>
+    </div>
+  </div>
+</BaseLayout>
