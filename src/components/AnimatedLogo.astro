@@ -16,80 +16,227 @@ let svgContent = fs.readFileSync(svgPath, "utf-8");
     let rafId;
 
     const initLogoAnimation = () => {
+        if (rafId) cancelAnimationFrame(rafId);
         const container = document.querySelector(".logo-container");
+        if (!container) return;
 
-        if (container) {
-            const leftEye = document.getElementById("left-eye");
-            const rightEye = document.getElementById("right-eye");
-            const noseFront = document.getElementById("nose-front");
-            const mouth = document.getElementById("mouth");
-            const beard = document.getElementById("beard");
-            const rightCheek = document.getElementById("right-cheek-gesture");
-            const leftCheek = document.getElementById("left-cheek-gesture");
-            const mouthBelow = document.getElementById("mouth-below-gesture");
-            const logoBase = document.getElementById("logo-base");
+        // --- Layer setup ---
+        const layerConfigs = [
+            { id: "left-eye", parallax: 12, pullWeight: 0.7 },
+            { id: "right-eye", parallax: 12, pullWeight: 0.7 },
+            { id: "nose-front", parallax: 8, pullWeight: 1.0 },
+            { id: "mouth", parallax: 5, pullWeight: 0.6 },
+            { id: "beard", parallax: 1, pullWeight: 0.3 },
+            { id: "mouth-below-gesture", parallax: 4, pullWeight: 0.5 },
+            { id: "right-cheek-gesture", parallax: 3, pullWeight: 0.5 },
+            { id: "left-cheek-gesture", parallax: 3, pullWeight: 0.5 },
+            { id: "logo-base", parallax: -2, pullWeight: 0.1 },
+        ];
 
-            let targetXNorm = 0;
-            let targetYNorm = 0;
-            let currentXNorm = 0;
-            let currentYNorm = 0;
-
-            const handleMouseMove = (e) => {
-                const rect = container.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-
-                // Calculate cursor position related to the center of our logo,
-                // normalized approximately to -1 .. 1 across the window halves.
-                targetXNorm = (e.clientX - centerX) / (window.innerWidth / 2);
-                targetYNorm = (e.clientY - centerY) / (window.innerHeight / 2);
-
-                // clamp to -1..1 to prevent excessive movement away from the center
-                targetXNorm = Math.max(-1, Math.min(1, targetXNorm));
-                targetYNorm = Math.max(-1, Math.min(1, targetYNorm));
-            };
-
-            const animateParams = () => {
-                // Lerp for smooth, fluid following
-                currentXNorm += (targetXNorm - currentXNorm) * 0.08;
-                currentYNorm += (targetYNorm - currentYNorm) * 0.08;
-
-                // Applying transform dynamism
-                const moveLayer = (layer, multiplierX, multiplierY) => {
-                    if (layer) {
-                        layer.style.transform = `translate(${currentXNorm * multiplierX}px, ${currentYNorm * multiplierY}px)`;
-                    }
+        const layers = layerConfigs
+            .map((cfg) => {
+                const el = document.getElementById(cfg.id);
+                if (!el) return null;
+                return {
+                    el,
+                    parallax: cfg.parallax,
+                    pullWeight: cfg.pullWeight,
+                    // Current displacement (px)
+                    dx: 0,
+                    dy: 0,
+                    // Velocity for spring physics
+                    vx: 0,
+                    vy: 0,
+                    // Target displacement (set during grab)
+                    tx: 0,
+                    ty: 0,
                 };
+            })
+            .filter(Boolean);
 
-                // Tune these multipliers to determine how far each layer goes
-                moveLayer(leftEye, 12, 12);
-                moveLayer(rightEye, 12, 12);
-                moveLayer(noseFront, 8, 8);
+        // --- State ---
+        let mode = "idle"; // "idle" | "grabbing" | "springing"
+        let targetXNorm = 0,
+            targetYNorm = 0;
+        let currentXNorm = 0,
+            currentYNorm = 0;
+        let grabStartX = 0,
+            grabStartY = 0;
+        let dragX = 0,
+            dragY = 0;
 
-                moveLayer(mouth, 5, 5);
-                moveLayer(beard, 1, 1);
-                moveLayer(mouthBelow, 4, 4);
+        // Spring constants
+        const SPRING_STIFFNESS = 0.15;
+        const SPRING_DAMPING = 0.7;
+        const SPRING_THRESHOLD = 0.05;
 
-                moveLayer(rightCheek, 3, 3);
-                moveLayer(leftCheek, 3, 3);
+        // Subtle max drag displacement (px)
+        const MAX_PULL = 12;
 
-                moveLayer(logoBase, -2, -2); // Inverse parallax on the face/ears base creates a really cool 3D illusion
+        // --- Helpers ---
+        const getLayerCenter = (layer) => {
+            try {
+                const bbox = layer.el.getBBox();
+                return {
+                    x: bbox.x + bbox.width / 2,
+                    y: bbox.y + bbox.height / 2,
+                };
+            } catch {
+                return { x: 79, y: 94 };
+            }
+        };
 
-                rafId = requestAnimationFrame(animateParams);
-            };
+        const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-            window.addEventListener("mousemove", handleMouseMove);
-            rafId = requestAnimationFrame(animateParams);
-
-            // Return gracefully when mouse leaves the document to look directly at the user
-            document.addEventListener("mouseleave", () => {
-                targetXNorm = 0;
-                targetYNorm = 0;
+        // --- Grab handlers ---
+        const onMouseDown = (e) => {
+            const svgEl = container.querySelector("svg");
+            if (!svgEl) return;
+            const svgRect = svgEl.getBoundingClientRect();
+            grabStartX = ((e.clientX - svgRect.left) / svgRect.width) * 159;
+            grabStartY = ((e.clientY - svgRect.top) / svgRect.height) * 188;
+            dragX = 0;
+            dragY = 0;
+            mode = "grabbing";
+            container.style.cursor = "grabbing";
+            layers.forEach((l) => {
+                l.vx = 0;
+                l.vy = 0;
             });
-        }
+        };
+
+        const onMouseUp = () => {
+            if (mode === "grabbing") {
+                mode = "springing";
+                container.style.cursor = "grab";
+                layers.forEach((l) => {
+                    l.tx = 0;
+                    l.ty = 0;
+                });
+            }
+        };
+
+        const onMouseMove = (e) => {
+            const rect = container.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            targetXNorm = clamp(
+                (e.clientX - centerX) / (window.innerWidth / 2),
+                -1,
+                1,
+            );
+            targetYNorm = clamp(
+                (e.clientY - centerY) / (window.innerHeight / 2),
+                -1,
+                1,
+            );
+
+            if (mode === "grabbing") {
+                const svgEl = container.querySelector("svg");
+                if (!svgEl) return;
+                const svgRect = svgEl.getBoundingClientRect();
+                const curX = ((e.clientX - svgRect.left) / svgRect.width) * 159;
+                const curY = ((e.clientY - svgRect.top) / svgRect.height) * 188;
+                dragX = clamp(curX - grabStartX, -MAX_PULL, MAX_PULL);
+                dragY = clamp(curY - grabStartY, -MAX_PULL, MAX_PULL);
+
+                layers.forEach((l) => {
+                    const center = getLayerCenter(l);
+                    const dist = Math.sqrt(
+                        (center.x - grabStartX) ** 2 +
+                            (center.y - grabStartY) ** 2,
+                    );
+                    const proximity = Math.max(0, 1 - dist / 150);
+                    const pull = proximity * l.pullWeight;
+                    l.tx = dragX * pull;
+                    l.ty = dragY * pull;
+                });
+            }
+        };
+
+        // --- Animation loop ---
+        const animate = () => {
+            currentXNorm += (targetXNorm - currentXNorm) * 0.08;
+            currentYNorm += (targetYNorm - currentYNorm) * 0.08;
+
+            if (mode === "idle") {
+                layers.forEach((l) => {
+                    l.dx = currentXNorm * l.parallax;
+                    l.dy = currentYNorm * l.parallax;
+                    l.el.style.transform = `translate(${l.dx}px, ${l.dy}px)`;
+                });
+            } else if (mode === "grabbing") {
+                layers.forEach((l) => {
+                    l.dx += (l.tx - l.dx) * 0.3;
+                    l.dy += (l.ty - l.dy) * 0.3;
+                    const scaleX =
+                        1 + (Math.abs(l.dx) / MAX_PULL) * 0.03 * l.pullWeight;
+                    const scaleY =
+                        1 + (Math.abs(l.dy) / MAX_PULL) * 0.03 * l.pullWeight;
+                    l.el.style.transform = `translate(${l.dx}px, ${l.dy}px) scale(${scaleX}, ${scaleY})`;
+                });
+            } else if (mode === "springing") {
+                let allSettled = true;
+
+                layers.forEach((l) => {
+                    const springTargetX = currentXNorm * l.parallax;
+                    const springTargetY = currentYNorm * l.parallax;
+                    l.vx +=
+                        -SPRING_STIFFNESS * (l.dx - springTargetX) -
+                        (1 - SPRING_DAMPING) * l.vx;
+                    l.vy +=
+                        -SPRING_STIFFNESS * (l.dy - springTargetY) -
+                        (1 - SPRING_DAMPING) * l.vy;
+                    l.dx += l.vx;
+                    l.dy += l.vy;
+
+                    const distFromTarget =
+                        Math.abs(l.dx - springTargetX) +
+                        Math.abs(l.dy - springTargetY);
+                    const speed = Math.abs(l.vx) + Math.abs(l.vy);
+                    if (
+                        distFromTarget > SPRING_THRESHOLD ||
+                        speed > SPRING_THRESHOLD
+                    ) {
+                        allSettled = false;
+                    }
+                    l.el.style.transform = `translate(${l.dx}px, ${l.dy}px)`;
+                });
+
+                if (allSettled) {
+                    mode = "idle";
+                    layers.forEach((l) => {
+                        l.vx = 0;
+                        l.vy = 0;
+                    });
+                }
+            }
+
+            rafId = requestAnimationFrame(animate);
+        };
+
+        // --- Bind events ---
+        container.style.cursor = "grab";
+        container.addEventListener("mousedown", onMouseDown);
+        window.addEventListener("mouseup", onMouseUp);
+        window.addEventListener("mousemove", onMouseMove);
+        rafId = requestAnimationFrame(animate);
+
+        document.addEventListener("mouseleave", () => {
+            if (mode === "grabbing") {
+                mode = "springing";
+                container.style.cursor = "grab";
+                layers.forEach((l) => {
+                    l.tx = 0;
+                    l.ty = 0;
+                });
+            }
+            targetXNorm = 0;
+            targetYNorm = 0;
+        });
     };
 
-    // Run on mount and Astro view transitions (if employed)
+    // Run on mount and Astro view transitions
     initLogoAnimation();
     document.addEventListener("astro:page-load", initLogoAnimation);
 </script>
