@@ -1,0 +1,95 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+
+// Read the SVG file at build time to keep this component clean
+const svgPath = path.join(process.cwd(), "public/logo-base.svg");
+let svgContent = fs.readFileSync(svgPath, "utf-8");
+---
+
+<div
+    class="relative w-full h-full text-[var(--text-color)] logo-container flex items-center justify-center overflow-visible transition-colors duration-300"
+    set:html={svgContent}
+/>
+
+<script>
+    let rafId;
+
+    const initLogoAnimation = () => {
+        const container = document.querySelector(".logo-container");
+
+        if (container) {
+            const leftEye = document.getElementById("left-eye");
+            const rightEye = document.getElementById("right-eye");
+            const noseFront = document.getElementById("nose-front");
+            const mouth = document.getElementById("mouth");
+            const beard = document.getElementById("beard");
+            const rightCheek = document.getElementById("right-cheek-gesture");
+            const leftCheek = document.getElementById("left-cheek-gesture");
+            const mouthBelow = document.getElementById("mouth-below-gesture");
+            const logoBase = document.getElementById("logo-base");
+
+            let targetXNorm = 0;
+            let targetYNorm = 0;
+            let currentXNorm = 0;
+            let currentYNorm = 0;
+
+            const handleMouseMove = (e) => {
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+
+                // Calculate cursor position related to the center of our logo,
+                // normalized approximately to -1 .. 1 across the window halves.
+                targetXNorm = (e.clientX - centerX) / (window.innerWidth / 2);
+                targetYNorm = (e.clientY - centerY) / (window.innerHeight / 2);
+
+                // clamp to -1..1 to prevent excessive movement away from the center
+                targetXNorm = Math.max(-1, Math.min(1, targetXNorm));
+                targetYNorm = Math.max(-1, Math.min(1, targetYNorm));
+            };
+
+            const animateParams = () => {
+                // Lerp for smooth, fluid following
+                currentXNorm += (targetXNorm - currentXNorm) * 0.08;
+                currentYNorm += (targetYNorm - currentYNorm) * 0.08;
+
+                // Applying transform dynamism
+                const moveLayer = (layer, multiplierX, multiplierY) => {
+                    if (layer) {
+                        layer.style.transform = `translate(${currentXNorm * multiplierX}px, ${currentYNorm * multiplierY}px)`;
+                    }
+                };
+
+                // Tune these multipliers to determine how far each layer goes
+                moveLayer(leftEye, 12, 12);
+                moveLayer(rightEye, 12, 12);
+                moveLayer(noseFront, 8, 8);
+
+                moveLayer(mouth, 5, 5);
+                moveLayer(beard, 1, 1);
+                moveLayer(mouthBelow, 4, 4);
+
+                moveLayer(rightCheek, 3, 3);
+                moveLayer(leftCheek, 3, 3);
+
+                moveLayer(logoBase, -2, -2); // Inverse parallax on the face/ears base creates a really cool 3D illusion
+
+                rafId = requestAnimationFrame(animateParams);
+            };
+
+            window.addEventListener("mousemove", handleMouseMove);
+            rafId = requestAnimationFrame(animateParams);
+
+            // Return gracefully when mouse leaves the document to look directly at the user
+            document.addEventListener("mouseleave", () => {
+                targetXNorm = 0;
+                targetYNorm = 0;
+            });
+        }
+    };
+
+    // Run on mount and Astro view transitions (if employed)
+    initLogoAnimation();
+    document.addEventListener("astro:page-load", initLogoAnimation);
+</script>

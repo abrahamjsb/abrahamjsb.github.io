@@ -1,17 +1,14 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import AnimatedLogo from "../../components/AnimatedLogo.astro";
 ---
 
 <BaseLayout title="Abraham Sanchez - Welcome" lang="en">
   <section
     class="mt-8 md:mt-16 flex flex-col items-center text-center space-y-6"
   >
-    <div
-      class="w-32 h-38 md:w-40 md:h-47 mb-4"
-      role="img"
-      aria-label="Abraham Sanchez Logo"
-      style="background-color: var(--text-color); -webkit-mask-image: url('/logo.svg'); mask-image: url('/logo.svg'); -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center;"
-    >
+    <div class="mb-4">
+      <AnimatedLogo />
     </div>
 
     <h1 class="text-4xl md:text-5xl font-bold tracking-tight">
