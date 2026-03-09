@@ -8,10 +8,10 @@ let svgContent = fs.readFileSync(svgPath, "utf-8");
 ---
 
 <div
-    class="relative w-full h-full text-[var(--text-color)] logo-container flex items-center justify-center overflow-visible transition-colors duration-300"
+    class="relative text-[var(--text-color)] logo-container flex items-center justify-center overflow-visible transition-colors duration-300"
+    style="width: 220px; height: 260px;"
     set:html={svgContent}
 />
-
 <script>
     let rafId;
 
